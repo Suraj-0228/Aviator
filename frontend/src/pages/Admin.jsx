@@ -42,7 +42,7 @@ export default function Admin() {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 4000);
+    }, 1000);
   };
 
   const fetchAdminData = async () => {

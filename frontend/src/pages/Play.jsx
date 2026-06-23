@@ -71,7 +71,7 @@ export default function Play() {
     toastTimeoutRef.current = setTimeout(() => {
       setToast(null);
       toastTimeoutRef.current = null;
-    }, 4000);
+    }, 1000);
   };
 
   // Refs

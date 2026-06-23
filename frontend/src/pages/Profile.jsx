@@ -96,7 +96,7 @@ export default function Profile() {
     if (user?._id) {
       navigator.clipboard.writeText(user._id);
       setSuccessMsg('UID copied to clipboard!');
-      setTimeout(() => setSuccessMsg(''), 2000);
+      setTimeout(() => setSuccessMsg(''), 1000);
     }
   };
 
@@ -488,7 +488,7 @@ export default function Profile() {
                 <p class="text-xs text-gray-400">Enter a valid pilot gift code to receive free Rupee balance credits!</p>
               </div>
               <input type="text" placeholder="Enter Gift Code" class="w-full bg-[#131418] border border-[#2d303b] focus:border-red-500/50 rounded-xl px-4 py-2.5 text-center text-white focus:outline-none text-xs font-mono-val uppercase tracking-widest"/>
-              <button onClick={() => { setActiveModal(null); setSuccessMsg('Invalid or expired gift code!'); setTimeout(() => setSuccessMsg(''), 2500); }} class="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-lg shadow-red-500/10">
+              <button onClick={() => { setActiveModal(null); setSuccessMsg('Invalid or expired gift code!'); setTimeout(() => setSuccessMsg(''), 1000); }} class="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-lg shadow-red-500/10">
                 Redeem Code
               </button>
             </div>

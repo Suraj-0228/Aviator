@@ -21,6 +21,20 @@ export default function Deposit() {
     fetchTransactions();
   }, []);
 
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
   const handleRefreshBalance = async () => {
     setBalanceRefreshing(true);
     try {
