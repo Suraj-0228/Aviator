@@ -1,0 +1,87 @@
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: #07080a;
+  color: white;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.font-mono-val {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Custom scrollbar for sidebars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(20, 22, 29, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(225, 29, 72, 0.6);
+}
+
+/* Keyframes for animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(225, 29, 72, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(225, 29, 72, 0.5); }
+}
+.neon-pulse {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+  50% { text-shadow: 0 0 25px rgba(255, 255, 255, 0.6); }
+}
+.text-neon-glow {
+  animation: text-glow 2s infinite ease-in-out;
+}
+
+@keyframes text-glow-red {
+  0%, 100% { text-shadow: 0 0 10px rgba(225, 29, 72, 0.4); }
+  50% { text-shadow: 0 0 25px rgba(225, 29, 72, 0.8); }
+}
+.text-neon-glow-red {
+  animation: text-glow-red 1.5s infinite ease-in-out;
+}
+
+/* Hide number input spinners globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Force standard red color for form error validation text */
+.text-red-500 {
+  color: #ff3333 !important;
+}
+
+@keyframes slide-in-right {
+  0% { transform: translateX(120%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdown-in {
+  0% { transform: translateY(-8px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-dropdown-in {
+  animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top right;
+}
+
+
