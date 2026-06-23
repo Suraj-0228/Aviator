@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
+import logo from '../assets/logo.png';
 import { SocketContext } from '../context/SocketContext.jsx';
 import { AviatorCanvas } from '../utils/canvasEngine.js';
 import { soundEngine } from '../utils/soundEngine.js';
@@ -529,8 +530,9 @@ export default function Play() {
             <i class="fa-solid fa-chevron-left text-sm md:text-base px-1"></i>
           </button>
           
-          <Link to="/" class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-fuchsia-600 font-black italic lg:text-2xl text-lg tracking-wider select-none uppercase hover:opacity-90 transition duration-200">
-            <i class="fa-solid fa-paper-plane mr-1 lg:mr-2 text-rose-500 animate-pulse"></i>Aviator
+          <Link to="/" class="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-fuchsia-600 font-black italic lg:text-2xl text-lg tracking-wider select-none uppercase hover:opacity-90 transition duration-200">
+            <img src={logo} alt="Aviator Logo" class="h-8 w-auto rounded-md object-contain" />
+            <span>Aviator</span>
           </Link>
           <button onClick={() => setFairnessOpen(true)} class="hidden md:flex text-xs items-center gap-1.5 bg-[#1b1c25]/80 hover:bg-gray-850 text-2xs text-gray-400 px-3 py-1.5 rounded-full border border-white/5 transition cursor-pointer">
             <i class="fa-solid fa-shield-halved text-emerald-500"></i>

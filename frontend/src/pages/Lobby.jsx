@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
+import logo from '../assets/logo.png';
 
 export default function Lobby() {
   const { user, syncBalance } = useContext(AuthContext);
@@ -44,13 +45,16 @@ export default function Lobby() {
       
       {/* 1. TOP HEADER BRANDING */}
       <header class="bg-[#1a1c22] px-4 py-3 flex items-center justify-between border-b border-[#2d303b] shrink-0">
-        <div class="flex flex-col">
-          <span class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-[#ef4444] to-[#f43f5e] uppercase">
-            Aviator Game
-          </span>
-          <div class="flex items-center gap-1.5 mt-0.5">
-            <span class="text-[14px]">🇮🇳</span>
-            <span class="text-xs text-red-500 font-bold uppercase tracking-wider">Welcome to Aviator Game</span>
+        <div class="flex items-center gap-2.5">
+          <img src={logo} alt="Aviator Logo" class="h-9 w-auto rounded-lg object-contain shadow shadow-red-500/10 border border-white/5" />
+          <div class="flex flex-col">
+            <span class="text-base font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-[#ef4444] to-[#f43f5e] uppercase leading-none">
+              Aviator Game
+            </span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="text-[11px]">🇮🇳</span>
+              <span class="text-[9px] text-red-500 font-bold uppercase tracking-wider">Welcome to Aviator Game</span>
+            </div>
           </div>
         </div>
         {user?.role === 'admin' && (
