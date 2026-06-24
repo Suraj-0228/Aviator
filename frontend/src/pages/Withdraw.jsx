@@ -4,7 +4,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 
 export default function Withdraw() {
-  const { user, syncBalance } = useContext(AuthContext);
+  const { user, syncBalances } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [amount, setAmount] = useState('500'); // Default ₹500
@@ -33,6 +33,17 @@ export default function Withdraw() {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      if (!upiName) setUpiName(user.username || 'Suraj Manani');
+      if (!upiId) setUpiId(`${user.username?.toLowerCase() || 'suraj'}@demobank`);
+      if (!bankHolderName) setBankHolderName(user.username || 'Suraj Manani');
+      if (!bankName) setBankName('Virtual Demo Bank');
+      if (!accountNo) setAccountNo('123456782828');
+      if (!ifscCode) setIfscCode('VDBK0002828');
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (successMsg) {
       const timer = setTimeout(() => setSuccessMsg(''), 1000);
       return () => clearTimeout(timer);
@@ -51,7 +62,7 @@ export default function Withdraw() {
     try {
       const res = await axios.get('/auth/profile');
       if (res.data.success) {
-        syncBalance(res.data.user.balance);
+        syncBalances(res.data.user.balance, res.data.user.bankBalance);
       }
     } catch (e) {
       console.warn('Failed to refresh balance:', e.message);
@@ -116,7 +127,7 @@ export default function Withdraw() {
       });
 
       if (res.data.success) {
-        syncBalance(res.data.newBalance);
+        syncBalances(res.data.newBalance, user.bankBalance);
         setSuccessMsg(`Withdrawal request of ₹${val.toLocaleString('en-IN')} submitted! Pending approval.`);
         setAmount('500');
         setUpiName('');
@@ -182,25 +193,31 @@ export default function Withdraw() {
       <div class="px-4 py-4 space-y-4 overflow-y-auto no-scrollbar">
 
         {/* 2. RED BALANCE CARD */}
-        <section class="bg-gradient-to-tr from-[#881337] via-[#e11d48] to-[#fb7185] rounded-2xl p-5 shadow-xl relative overflow-hidden text-white flex flex-col gap-4">
+        <section class="bg-gradient-to-tr from-[#881337] via-[#e11d48] to-[#fb7185] rounded-2xl p-5 shadow-xl relative overflow-hidden text-white flex flex-col gap-3">
           <div class="absolute -top-10 -right-10 w-28 h-28 bg-white/10 rounded-full blur-[20px] pointer-events-none"></div>
           
-          <div class="space-y-1">
-            <div class="flex items-center gap-1.5 text-xs font-extrabold opacity-80 uppercase tracking-wider">
-              <i class="fa-solid fa-wallet"></i>
-              <span>Balance</span>
+          <div class="grid grid-cols-2 gap-4 divide-x divide-white/10">
+            {/* Wallet Balance */}
+            <div class="space-y-1">
+              <span class="text-[10px] uppercase font-extrabold opacity-80 tracking-wider block"><i class="fa-solid fa-wallet mr-1"></i> Cockpit Wallet</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xl font-mono-val font-black">₹{user?.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <button onClick={handleRefreshBalance} class="text-white/70 hover:text-white transition cursor-pointer p-0.5">
+                  <i class={`fa-solid fa-rotate text-xs ${balanceRefreshing ? 'animate-spin' : ''}`}></i>
+                </button>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-3xl font-mono-val font-black">₹{user?.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              <button onClick={handleRefreshBalance} class="text-white/70 hover:text-white transition cursor-pointer p-0.5">
-                <i class={`fa-solid fa-rotate text-sm ${balanceRefreshing ? 'animate-spin' : ''}`}></i>
-              </button>
+            
+            {/* Virtual Bank Balance */}
+            <div class="space-y-1 pl-4">
+              <span class="text-[10px] uppercase font-extrabold opacity-80 tracking-wider block"><i class="fa-solid fa-building-columns mr-1"></i> Bank Account</span>
+              <span class="text-xl font-mono-val font-black block text-amber-200">₹{(user?.bankBalance ?? 100000.00).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
-          <div class="flex justify-between items-center opacity-80 mt-2">
-            <i class="fa-solid fa-microchip text-2xl"></i>
-            <span class="font-mono-val text-lg font-bold tracking-widest">****  ****  ****</span>            
+          <div class="flex justify-between items-center opacity-85 mt-1 border-t border-white/5 pt-2">
+            <i class="fa-solid fa-microchip text-xl"></i>
+            <span class="font-mono-val text-xs tracking-widest">Suraj Manani | **** 2828</span>
           </div>
         </section>
 
@@ -236,7 +253,7 @@ export default function Withdraw() {
           </div>
           <div class="bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl p-3.5 flex flex-col shadow-inner">
             <span class="text-xs font-black uppercase tracking-wider">{method === 'UPI' ? 'UPI Cashout' : 'Bank Transfer Cashout'}</span>
-            <span class="text-[10px] font-bold mt-1 opacity-90">Balance:500 - 50K</span>
+            <span class="text-[10px] font-bold mt-1 opacity-90">Limit: ₹500 - ₹50,000</span>
           </div>
         </section>
 

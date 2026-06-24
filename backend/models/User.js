@@ -22,6 +22,17 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0.00 // Default demo balance
   },
+  bankBalance: {
+    type: Number,
+    default: 100000.00 // Default ₹1,00,000.00 virtual bank balance
+  },
+  lastCheckIn: {
+    type: Date
+  },
+  checkInStreak: {
+    type: Number,
+    default: 0
+  },
   clientSeed: {
     type: String,
     default: () => 'seed_' + Math.random().toString(36).substring(2, 9)

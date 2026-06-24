@@ -145,24 +145,33 @@ export default function Profile() {
         {/* Total Balance Card */}
         <div class="bg-[#1a1c22] border border-[#2d303b] rounded-2xl p-4.5 shadow-xl relative overflow-hidden flex flex-col gap-4">
           <div class="flex justify-between items-start">
-            <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-455 font-bold uppercase tracking-wider">Total Balance</span>
-              <div class="flex items-center gap-2">
-                <span class="text-2xl font-black font-mono-val text-white">₹{user?.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                <button onClick={handleRefreshBalance} class="text-gray-500 hover:text-white transition cursor-pointer p-0.5">
-                  <i class={`fa-solid fa-rotate text-xs ${balanceRefreshing ? 'animate-spin text-red-500' : ''}`}></i>
-                </button>
+            <div class="flex flex-col gap-3">
+              {/* Wallet Balance */}
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] text-gray-500 font-extrabold uppercase tracking-wider">Cockpit Wallet</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl font-black font-mono-val text-emerald-400">₹{user?.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <button onClick={handleRefreshBalance} class="text-gray-500 hover:text-white transition cursor-pointer p-0.5">
+                    <i class={`fa-solid fa-rotate text-xs ${balanceRefreshing ? 'animate-spin text-red-500' : ''}`}></i>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Virtual Bank Balance */}
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] text-gray-500 font-extrabold uppercase tracking-wider">Virtual Bank Account</span>
+                <span class="text-lg font-black font-mono-val text-white">₹{(user?.bankBalance ?? 100000.00).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
-            <button onClick={() => navigate('/deposit')} class="bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-black px-4 py-2 rounded-xl transition shadow-md shadow-red-500/10 cursor-pointer uppercase tracking-wider">
+            <button onClick={() => navigate('/deposit')} class="bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-black px-4 py-2.5 rounded-xl transition shadow-md shadow-red-500/10 cursor-pointer uppercase tracking-wider self-center">
               Enter Wallet
             </button>
           </div>
 
           <div class="border-t border-[#2d303b]/40 pt-3.5 grid grid-cols-4 gap-2 text-center text-xs">
-            <button onClick={() => setActiveModal('gifts')} class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-white transition cursor-pointer">
-              <i class="fa-solid fa-wallet text-base text-red-400"></i>
-              <span>ARWallet</span>
+            <button onClick={() => setActiveModal('bankDetails')} class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-white transition cursor-pointer">
+              <i class="fa-solid fa-building-columns text-base text-red-400"></i>
+              <span>Bank A/C</span>
             </button>
             <Link to="/deposit" class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-white transition cursor-pointer">
               <i class="fa-solid fa-circle-plus text-base text-red-500"></i>
@@ -491,6 +500,85 @@ export default function Profile() {
               <button onClick={() => { setActiveModal(null); setSuccessMsg('Invalid or expired gift code!'); setTimeout(() => setSuccessMsg(''), 1000); }} class="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-lg shadow-red-500/10">
                 Redeem Code
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 11. BANK DETAILS MODAL */}
+      {activeModal === 'bankDetails' && (
+        <div class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="bg-gradient-to-b from-[#1b1c25] to-[#0f1015] border border-[#2d303b]/80 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative animate-dropdown-in">
+            {/* Header */}
+            <div class="px-5 py-4 bg-[#131418] border-b border-[#2d303b]/60 flex justify-between items-center">
+              <h3 class="text-xs font-black uppercase tracking-wider text-red-500 flex items-center gap-2">
+                <i class="fa-solid fa-building-columns text-sm"></i> Virtual Bank Details
+              </h3>
+              <button onClick={() => setActiveModal(null)} class="text-gray-400 hover:text-white cursor-pointer transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div class="p-6 space-y-6">
+              {/* Simulated Passbook Card */}
+              <div class="bg-gradient-to-tr from-[#58051a] via-[#881337] to-[#fb7185] border border-red-500/20 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col gap-4">
+                {/* Chip and logo */}
+                <div class="flex justify-between items-center">
+                  <i class="fa-solid fa-microchip text-2xl opacity-90"></i>
+                  <span class="text-[10px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded">DEMO ONLY</span>
+                </div>
+                
+                {/* Card Number */}
+                <div class="space-y-1">
+                  <span class="text-[9px] uppercase font-bold opacity-75 tracking-wider block">Account Number</span>
+                  <span class="text-lg font-mono-val font-black tracking-widest block">1234 5678 2828</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-[8px] uppercase font-bold opacity-75 tracking-wider block">IFSC Code</span>
+                    <span class="text-xs font-mono-val font-bold">VDBK0002828</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[8px] uppercase font-bold opacity-75 tracking-wider block">Account Holder</span>
+                    <span class="text-xs font-bold truncate max-w-full block">{user?.username || 'Suraj Manani'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Balance & Status details */}
+              <div class="space-y-3.5">
+                <div class="bg-[#131418]/80 border border-[#2d303b]/60 rounded-2xl p-4 space-y-3">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-400">Account Status</span>
+                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-black text-[9px] uppercase tracking-wider">ACTIVE</span>
+                  </div>
+                  <div class="border-t border-[#2d303b]/40 my-2"></div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-405">Available Balance</span>
+                    <span class="text-base font-black font-mono-val text-red-400">
+                      ₹{(user?.bankBalance ?? 100000.00).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick actions buttons */}
+                <div class="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => { setActiveModal(null); navigate('/deposit'); }}
+                    class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-[11px] font-black py-2.5 rounded-xl transition uppercase tracking-wider cursor-pointer text-center"
+                  >
+                    Transfer to Wallet
+                  </button>
+                  <button 
+                    onClick={() => { setActiveModal(null); navigate('/withdraw'); }}
+                    class="bg-[#1a1c22] hover:bg-[#22242b] border border-[#2d303b] text-gray-350 text-[11px] font-black py-2.5 rounded-xl transition uppercase tracking-wider cursor-pointer text-center"
+                  >
+                    Withdraw to Bank
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

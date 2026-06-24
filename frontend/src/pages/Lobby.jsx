@@ -3,15 +3,18 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import logo from '../assets/logo.png';
+import { soundEngine } from '../utils/soundEngine.js';
 
 export default function Lobby() {
-  const { user, syncBalance } = useContext(AuthContext);
+  const { user, syncBalances } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   const [activeModal, setActiveModal] = useState(null); // 'activity', 'promo', 'wheel'
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [balanceRefreshing, setBalanceRefreshing] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -26,12 +29,26 @@ export default function Lobby() {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
   const handleRefreshBalance = async () => {
     setBalanceRefreshing(true);
     try {
       const res = await axios.get('/auth/profile');
       if (res.data.success) {
-        syncBalance(res.data.user.balance);
+        syncBalances(res.data.user.balance, res.data.user.bankBalance);
       }
     } catch (e) {
       console.warn('Failed to refresh balance:', e.message);
@@ -40,9 +57,88 @@ export default function Lobby() {
     }
   };
 
+  const isCheckedInToday = () => {
+    if (!user?.lastCheckIn) return false;
+    const lastDate = new Date(user.lastCheckIn);
+    const today = new Date();
+    return lastDate.getDate() === today.getDate() &&
+           lastDate.getMonth() === today.getMonth() &&
+           lastDate.getFullYear() === today.getFullYear();
+  };
+
+  const getDayState = (dayNum) => {
+    if (!user) return 'locked';
+    
+    const checkInToday = isCheckedInToday();
+    
+    if (checkInToday) {
+      if (dayNum <= user.checkInStreak) {
+        return 'claimed';
+      } else {
+        return 'locked';
+      }
+    } else {
+      let claimableDayIdx = 1;
+      if (user.lastCheckIn) {
+        const lastDate = new Date(user.lastCheckIn);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const isYesterday = lastDate.getDate() === yesterday.getDate() &&
+                            lastDate.getMonth() === yesterday.getMonth() &&
+                            lastDate.getFullYear() === yesterday.getFullYear();
+        if (isYesterday) {
+          claimableDayIdx = (user.checkInStreak % 7) + 1;
+        }
+      }
+      
+      if (dayNum < claimableDayIdx) {
+        return 'claimed';
+      } else if (dayNum === claimableDayIdx) {
+        return 'active';
+      } else {
+        return 'locked';
+      }
+    }
+  };
+
+  const handleCheckIn = async () => {
+    try {
+      const res = await axios.post('/wallet/check-in');
+      if (res.data.success) {
+        syncBalances(res.data.newBalance, res.data.newBankBalance);
+        
+        try {
+          soundEngine.init();
+          soundEngine.isMuted = false;
+          soundEngine.playCashoutChime();
+        } catch (soundErr) {
+          console.warn('Audio play failed:', soundErr);
+        }
+
+        setSuccessMsg(res.data.message || `Reward of ₹${res.data.reward} claimed!`);
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || 'Check-in failed');
+    }
+  };
+
   return (
     <div class="h-screen bg-[#131418] text-white flex flex-col justify-between max-w-md mx-auto shadow-2xl relative border-x border-[#2d303b]/50 select-none overflow-hidden">
       
+      {/* Toast notifications */}
+      {successMsg && (
+        <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white font-bold text-xs uppercase px-5 py-3 rounded-full shadow-lg text-center whitespace-nowrap animate-bounce">
+          {successMsg}
+        </div>
+      )}
+      {errorMsg && (
+        <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-rose-500 text-white font-bold text-xs uppercase px-5 py-3 rounded-full shadow-lg text-center whitespace-nowrap animate-bounce">
+          {errorMsg}
+        </div>
+      )}
+
       {/* 1. TOP HEADER BRANDING */}
       <header class="bg-[#1a1c22] px-4 py-3 flex items-center justify-between border-b border-[#2d303b] shrink-0">
         <div class="flex items-center gap-2.5">
@@ -276,31 +372,104 @@ export default function Lobby() {
 
       {/* 7. ACTIVITY (DAILY CHECK-IN) MODAL */}
       {activeModal === 'activity' && (
-        <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="bg-[#1a1c22] border border-[#2d303b] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative animate-dropdown-in">
-            <div class="px-5 py-4 bg-[#131418] border-b border-[#2d303b] flex justify-between items-center">
+        <div class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="bg-gradient-to-b from-[#1b1c25] to-[#0f1015] border border-[#2d303b]/80 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative animate-dropdown-in">
+            {/* Header */}
+            <div class="px-5 py-4 bg-[#131418] border-b border-[#2d303b]/60 flex justify-between items-center">
               <h3 class="text-xs font-black uppercase tracking-wider text-red-500 flex items-center gap-2">
-                <i class="fa-solid fa-calendar-check"></i> Daily check-in rewards
+                <i class="fa-solid fa-calendar-check text-sm animate-pulse"></i> Daily Pilot Check-In
               </h3>
-              <button onClick={() => setActiveModal(null)} class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i></button>
-            </div>
-            <div class="p-6 space-y-4 text-center">
-              <i class="fa-solid fa-gift text-5xl text-red-500 block animate-bounce"></i>
-              <div class="space-y-1">
-                <h4 class="text-sm font-bold text-white uppercase">Claim Daily Pilot Credits</h4>
-                <p class="text-xs text-gray-400">Recharge everyday to claim direct bonuses. Current level: VIP0.</p>
-              </div>
-              <div class="grid grid-cols-4 gap-2 text-xs">
-                {['Day 1', 'Day 2', 'Day 3', 'Day 4'].map((d, i) => (
-                  <div key={i} class="bg-[#131418] border border-[#2d303b] p-2.5 rounded-xl space-y-1">
-                    <span class="text-gray-500 block">{d}</span>
-                    <span class="text-red-500 font-bold font-mono-val">+₹{10 * (i + 1)}</span>
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => { setActiveModal(null); navigate('/deposit'); }} class="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-lg shadow-red-500/10">
-                Deposit to activate rewards
+              <button onClick={() => setActiveModal(null)} class="text-gray-400 hover:text-white cursor-pointer transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
               </button>
+            </div>
+            
+            {/* Body */}
+            <div class="p-5 space-y-4">
+              <div class="text-center space-y-1">
+                <h4 class="text-sm font-bold text-white uppercase tracking-wide">Claim Daily Pilot Credits</h4>
+                <p class="text-[11px] text-gray-400 leading-normal">
+                  Maintain your daily streak to claim bigger rewards. Click on today's active box to claim.
+                </p>
+              </div>
+
+              {/* 7-Day Grid */}
+              <div class="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6, 7].map((dayNum) => {
+                  const state = getDayState(dayNum); // 'claimed', 'active', 'locked'
+                  const isDay7 = dayNum === 7;
+                  const rewardAmt = dayNum === 7 ? 1000 : dayNum * 100;
+                  
+                  let cardClass = '';
+                  let statusIndicator = null;
+                  
+                  if (state === 'claimed') {
+                    cardClass = 'bg-emerald-950/20 border-emerald-500/40 text-emerald-400';
+                    statusIndicator = (
+                      <div class="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-white text-[8px] font-bold shadow-md shadow-emerald-500/20 animate-scale-in">
+                        <i class="fa-solid fa-check"></i>
+                      </div>
+                    );
+                  } else if (state === 'active') {
+                    cardClass = 'bg-red-500/10 border-red-500 text-white cursor-pointer shadow-lg shadow-red-500/10 hover:bg-red-500/20 active:scale-95 transition-all duration-150 relative border-dashed animate-pulse ring-2 ring-red-500/30';
+                    statusIndicator = (
+                      <div class="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-red-500 text-white text-[6px] font-black px-1.5 py-0.5 rounded shadow uppercase tracking-wider animate-bounce">
+                        Active
+                      </div>
+                    );
+                  } else {
+                    cardClass = 'bg-[#131418]/60 border-[#2d303b] text-gray-550 opacity-60';
+                    statusIndicator = (
+                      <div class="absolute top-1.5 right-1.5 text-gray-600 text-[10px]">
+                        <i class="fa-solid fa-lock"></i>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div 
+                      key={dayNum}
+                      onClick={() => {
+                        if (state === 'active') {
+                          handleCheckIn();
+                        }
+                      }}
+                      class={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-1.5 min-h-[85px] relative overflow-hidden transition-all duration-150 ${cardClass} ${isDay7 ? 'col-span-3 bg-gradient-to-r from-red-650/10 via-amber-600/10 to-red-650/10 border-amber-500/40' : ''}`}
+                    >
+                      {/* Top Label */}
+                      <span class="text-[9px] uppercase font-extrabold tracking-wider opacity-80 block">Day {dayNum}</span>
+                      
+                      {/* Reward Amount */}
+                      <span class={`font-mono-val font-black ${isDay7 ? 'text-lg text-amber-300' : 'text-sm text-red-450'}`}>
+                        ₹{rewardAmt}
+                      </span>
+                      
+                      {statusIndicator}
+                      
+                      {/* Background Decorator for Day 7 */}
+                      {isDay7 && (
+                        <div class="absolute -bottom-4 -right-4 w-12 h-12 bg-amber-500/5 rounded-full blur-md pointer-events-none"></div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Status info */}
+              <div class="bg-[#131418]/80 border border-[#2d303b]/60 rounded-2xl p-3 flex items-center justify-between text-xs text-left">
+                <div class="space-y-0.5">
+                  <span class="text-gray-400 block font-medium">Streak Status</span>
+                  <span class="text-white font-bold block">
+                    {user?.checkInStreak ? `${user.checkInStreak} Days Active` : 'No Active Streak'}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span class="text-gray-400 block font-medium">Virtual Bank Balance</span>
+                  <span class="text-amber-300 font-mono-val font-black block">
+                    ₹{(user?.bankBalance ?? 100000.00).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

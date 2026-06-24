@@ -350,13 +350,16 @@ export default function Admin() {
                             <button onClick={() => setEditingUserId(null)} class="text-gray-500 hover:text-white transition cursor-pointer px-0.5"><i class="fa-solid fa-xmark text-[9px]"></i></button>
                           </div>
                         ) : (
-                          <div class="flex flex-col items-end gap-1.5">
-                            <span class="text-emerald-400 font-mono-val font-bold text-[11px]">₹{u.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <div class="flex flex-col items-end gap-1">
+                            <div class="flex flex-col items-end text-right">
+                              <span class="text-emerald-400 font-mono-val font-bold text-[10px]">Cockpit: ₹{u.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                              <span class="text-amber-400 font-mono-val font-bold text-[10px]">Bank: ₹{(u.bankBalance ?? 100000.00).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
                             <button 
                               onClick={() => { setEditingUserId(u._id); setNewBalance(u.balance.toFixed(2)); }}
-                              class="bg-[#1a1c22] hover:bg-[#22242b] border border-[#2d303b] text-gray-400 hover:text-white px-2 py-1 rounded-lg text-[9px] font-black uppercase transition cursor-pointer active:scale-95"
+                              class="bg-[#1a1c22] hover:bg-[#22242b] border border-[#2d303b] text-gray-400 hover:text-white px-2 py-0.5 rounded-md text-[8px] font-black uppercase transition cursor-pointer active:scale-95 mt-0.5"
                             >
-                              <i class="fa-solid fa-pen-to-square text-[8px] mr-0.5"></i> Edit
+                              <i class="fa-solid fa-pen-to-square text-[7px] mr-0.5"></i> Edit
                             </button>
                           </div>
                         )}

@@ -100,6 +100,10 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => prev ? { ...prev, balance: newBalance } : null);
   };
 
+  const syncBalances = (newBalance, newBankBalance) => {
+    setUser(prev => prev ? { ...prev, balance: newBalance, bankBalance: newBankBalance } : null);
+  };
+
   const updateProfile = async (avatar, currentPassword, newPassword) => {
     try {
       const res = await axios.post(`${API_URL}/auth/update`, { avatar, currentPassword, newPassword });
@@ -142,6 +146,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       updateClientSeed,
       syncBalance,
+      syncBalances,
       updateProfile,
       deleteAccount
     }}>

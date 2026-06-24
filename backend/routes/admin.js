@@ -115,7 +115,17 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
     trans.status = 'completed';
     await trans.save();
 
-    return res.status(200).json({ success: true, transaction: trans, message: 'Withdrawal approved' });
+    // Credit user's virtual bank balance on approval
+    const user = await User.findById(trans.userId);
+    if (user) {
+      if (user.bankBalance === undefined || user.bankBalance === null) {
+        user.bankBalance = 100000.00;
+      }
+      user.bankBalance += trans.amount;
+      await user.save();
+    }
+
+    return res.status(200).json({ success: true, transaction: trans, message: 'Withdrawal approved and credited to player bank' });
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Server error approving withdrawal' });
   }

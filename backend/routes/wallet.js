@@ -19,7 +19,18 @@ router.post('/deposit', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    // Increment wallet balance
+    // Ensure bankBalance exists (fallback for existing users)
+    if (user.bankBalance === undefined || user.bankBalance === null) {
+      user.bankBalance = 100000.00;
+    }
+    
+    // Validate bank balance limit
+    if (user.bankBalance < depositAmt) {
+      return res.status(400).json({ success: false, error: 'Insufficient bank account balance' });
+    }
+    
+    // Deduct from bank balance, credit to game wallet balance
+    user.bankBalance -= depositAmt;
     user.balance += depositAmt;
     await user.save();
 
@@ -29,17 +40,82 @@ router.post('/deposit', protect, async (req, res) => {
       type: 'deposit',
       amount: depositAmt,
       status: 'completed',
-      paymentGateway: method || 'mock_gateway'
+      paymentGateway: method || 'bank_transfer'
     });
 
     return res.status(200).json({
       success: true,
       newBalance: user.balance,
+      newBankBalance: user.bankBalance,
       message: 'Deposit successful'
     });
   } catch (err) {
     console.error('Deposit error:', err);
     return res.status(500).json({ success: false, error: 'Server error processing deposit' });
+  }
+});
+
+// @desc    Daily check-in (Option B: credits virtual bank balance)
+// @route   POST /api/wallet/check-in
+router.post('/check-in', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (user.lastCheckIn) {
+      const lastDate = new Date(user.lastCheckIn);
+      const lastCheckInDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+      
+      if (today.getTime() === lastCheckInDay.getTime()) {
+        return res.status(400).json({ success: false, error: 'You have already checked in today!' });
+      }
+      
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastCheckInDay.getTime() === yesterday.getTime()) {
+        user.checkInStreak = (user.checkInStreak % 7) + 1;
+      } else {
+        user.checkInStreak = 1; // streak broken
+      }
+    } else {
+      user.checkInStreak = 1;
+    }
+
+    // Streak rewards: Day 1 (+100) -> Day 7 (+1000)
+    const rewards = [100, 200, 300, 400, 500, 600, 1000];
+    const rewardAmt = rewards[user.checkInStreak - 1];
+
+    if (user.bankBalance === undefined || user.bankBalance === null) {
+      user.bankBalance = 100000.00;
+    }
+    user.bankBalance += rewardAmt;
+    user.lastCheckIn = now;
+    await user.save();
+
+    // Create completed Transaction log
+    await Transaction.create({
+      userId: user._id,
+      type: 'deposit',
+      amount: rewardAmt,
+      status: 'completed',
+      paymentGateway: 'daily_checkin'
+    });
+
+    return res.status(200).json({
+      success: true,
+      newBalance: user.balance,
+      newBankBalance: user.bankBalance,
+      streak: user.checkInStreak,
+      reward: rewardAmt,
+      message: `Checked in successfully! +₹${rewardAmt} added to virtual bank balance.`
+    });
+  } catch (err) {
+    console.error('Check-in error:', err);
+    return res.status(500).json({ success: false, error: 'Server error processing check-in' });
   }
 });
 
