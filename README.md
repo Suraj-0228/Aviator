@@ -12,13 +12,15 @@ A real-time, mobile-first multiplayer crash flight simulation game built on the 
 - **Real-Time Multiplier Strip**: A scrollable history header showing colors categorized by multiplier levels (cyan, purple, fuchsia, and glowing pink for jackpot 100x+ runs).
 - **Provably Fair Verification Modal**: A cryptographic validation console displaying the pre-round server seed SHA-256 hash, enabling players to customize their client seed and verify the mathematical crash point generation formula.
 - **Interactive Service Center**: Links to pilot settings (change password, delete account), a step-by-step game guide, an "About us" page, and a notice board explaining that the game is built purely for fun.
-- **Wallet & Gateways**: Complete UPI-QR, USDT, Wake UP-APP, and Bank Transfer mock deposit channels and cashout (withdrawal) forms.
+- **Virtual Bank Balance & Transfers**: A starting virtual bank account balance (₹1,00,000.00 default) where players can transfer funds to their game wallet. Withdrawal requests are deducted from the cockpit balance and credited back to the bank balance upon administrative approval.
+- **Virtual Bank Account Details Modal**: A passbook-like visual card (replacing the generic ARWallet button) in the pilot profile containing account card numbers, holder details, IFSC codes, status, and quick links to deposit/withdraw.
+- **7-Day Streak Daily Check-in Grid**: An interactive daily check-in streak calendar (Day 1-6: ₹100-₹600, Day 7: ₹1000 jackpot) where players click on today's active pulsing card to claim rewards, playing sound chimes upon successful claims.
 
 ### 🛡️ Admin Dashboard (Control Cabin)
 - **Real-Time Stats Grid**: Displays total registered pilots, house margin calculations, aggregate deposits, and approved payouts.
 - **Control Cabin Status Logs**: Monitors database links, system uptime, and server tick loops.
-- **Pending Cashouts Console**: Administrators can review bank/UPI payout details to either approve or reject (funds are automatically refunded to player wallets on rejection).
-- **Player Balance Ledger**: A searchable pilot database where admins can manually adjust wallet balances in real time.
+- **Pending Cashouts Console**: Administrators can review bank/UPI payout details to either approve or reject (approvals instantly credit the player's virtual bank account; rejections refund the game wallet).
+- **Player Balance Ledger**: A searchable pilot database displaying both cockpit game balances and virtual bank balances, allowing manual wallet balance adjustments.
 - **Unified Navigation Bar**: An admin-specific bottom footer that transitions seamlessly across pages (Stats, Cashouts, Users, Admin Profile, and the Cockpit game screen).
 
 ---
@@ -58,7 +60,8 @@ Aviator/
 
 ### Prerequisites
 - Install **Node.js** (v16+)
-- Install **MongoDB** (Ensure local MongoDB is running on port `27017`)
+- Install **MongoDB** (Ensure local MongoDB is running on port `27017` to enable fast local databases and offline capabilities).
+  *Note: In development mode, the server automatically prioritizes local MongoDB, falling back to the Atlas connection string if local is offline, ensuring a smooth experience in both local and deployed environments.*
 
 ### 1. Run the Backend Server
 1. Navigate to the backend directory:
